@@ -161,6 +161,9 @@ footer {
   background-color: #e8eaf6;
   border: 1px solid #c5cae9;
   border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .participant-pill.empty {
@@ -169,4 +172,36 @@ footer {
   color: #777;
   font-style: italic;
   padding: 0;
+}
+
+/* Small remove button inside participant pills */
+.participant-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  width: 20px;
+  height: 20px;
+  min-width: 20px;
+  line-height: 1;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #c62828;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 0.15s, color 0.15s;
+}
+
+.participant-remove:hover {
+  background: rgba(198, 40, 40, 0.08);
+  color: #b71c1c;
+}
+
+.participant-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
 }

@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
   async function fetchActivities() {
     activitiesList.innerHTML = '<p>Loading activities...</p>';
     try {
-      const response = await fetch("/activities");
+      const response = await fetch("/activities", { cache: "no-store" });
       const activities = await response.json();
 
       // Clear loading message
@@ -51,7 +51,45 @@ document.addEventListener("DOMContentLoaded", () => {
           details.participants.forEach((email) => {
             const li = document.createElement("li");
             li.className = "participant-pill";
-            li.textContent = email;
+
+            // Name/email text
+            const nameSpan = document.createElement("span");
+            nameSpan.className = "participant-name";
+            nameSpan.textContent = email;
+
+            // Remove button (delete icon)
+            const removeBtn = document.createElement("button");
+            removeBtn.className = "participant-remove";
+            removeBtn.setAttribute("title", `Remove ${email} from ${name}`);
+            removeBtn.setAttribute("aria-label", `Remove ${email} from ${name}`);
+            removeBtn.innerHTML = "&times;"; // multiplication sign as close icon
+
+            // Attach click handler to delete participant
+            removeBtn.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              if (!confirm(`Are you sure you want to remove ${email} from ${name}?`)) return;
+              removeBtn.disabled = true;
+              try {
+                const resp = await fetch(`/activities/${encodeURIComponent(name)}/signup?email=${encodeURIComponent(email)}`, {
+                  method: "DELETE",
+                  cache: "no-store",
+                });
+                const result = await resp.json();
+                if (resp.ok) {
+                  showMessage(result.message, "success");
+                } else {
+                  showMessage(result.detail || "Failed to remove participant", "error");
+                }
+              } catch (err) {
+                console.error("Failed to remove participant:", err);
+                showMessage("Failed to remove participant. Please try again.", "error");
+              } finally {
+                await fetchActivities();
+              }
+            });
+
+            li.appendChild(nameSpan);
+            li.appendChild(removeBtn);
             participantsUl.appendChild(li);
           });
         } else {
@@ -95,10 +133,12 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const submitBtn = signupForm.querySelector("button[type='submit']");
     try {
+      if (submitBtn) submitBtn.disabled = true;
       const response = await fetch(
         `/activities/${encodeURIComponent(activity)}/signup?email=${encodeURIComponent(email)}`,
-        { method: "POST" }
+        { method: "POST", cache: "no-store" }
       );
 
       const result = await response.json();
@@ -113,6 +153,9 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (error) {
       showMessage("Failed to sign up. Please try again.", "error");
       console.error("Error signing up:", error);
+    }
+    finally {
+      if (submitBtn) submitBtn.disabled = false;
     }
   });
 
